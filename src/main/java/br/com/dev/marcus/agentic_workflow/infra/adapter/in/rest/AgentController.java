@@ -24,7 +24,11 @@ public class AgentController {
             value = "execute",
             version = "1"
     )
-    public ResponseEntity<InstructionResponseDTO> execute(@Valid @RequestBody InstructionRequestDTO dto) {
+    public ResponseEntity<InstructionResponseDTO> execute(
+            @Valid
+            @RequestBody
+            InstructionRequestDTO dto
+    ) {
         String response = this.executeAgentUseCase.execute(dto.instruction());
         return ResponseEntity.ok(new InstructionResponseDTO(response));
     }
