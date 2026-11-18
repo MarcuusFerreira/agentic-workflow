@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 @Component
-public class CalculatorTool {
+public class CalculatorTool implements AgentTool {
 
     private static final Logger log = LoggerFactory.getLogger(CalculatorTool.class);
 

@@ -8,9 +8,9 @@ import org.springframework.context.annotation.Configuration;
 public class ToolConfiguration {
 
     @Bean
-    ChatClient chatClient(ChatClient.Builder builder, CalculatorTool calculatorTool) {
+    ChatClient chatClient(ChatClient.Builder builder, SpringAIToolRegistry toolRegistry) {
         return builder
-                .defaultTools(calculatorTool)
+                .defaultTools(toolRegistry)
                 .build();
     }
 }
