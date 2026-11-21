@@ -46,6 +46,26 @@ public class ConversationMessageJdbcRepository {
         );
     }
 
+    public void saveAll(List<ConversationMessageEntity> entities) {
+        String sql = """
+        INSERT INTO conversation_messages (
+            ID,
+            CONVERSATION_ID,
+            ROLE,
+            CONTENT,
+            CREATED_AT
+        ) VALUES (?, ?, ?, ?, ?)
+        """;
+
+        jdbcTemplate.batchUpdate(sql, entities, entities.size(), (ps, entity) -> {
+            ps.setObject(1, entity.id());
+            ps.setObject(2, entity.conversationId());
+            ps.setString(3, entity.role());
+            ps.setString(4, entity.content());
+            ps.setObject(5, entity.createdAt());
+        });
+    }
+
     public List<ConversationMessageEntity> findByConversationId(
             UUID conversationId
     ) {

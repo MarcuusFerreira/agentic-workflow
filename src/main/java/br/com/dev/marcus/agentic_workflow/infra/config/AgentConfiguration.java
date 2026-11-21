@@ -33,8 +33,8 @@ public class AgentConfiguration {
     }
 
     @Bean
-    public ContinueConversationUseCase continueConversationUseCase(ConversationMessagePort conversationMessagePort, LanguageModelPort languageModelPort) {
-        return new ContinueConversationUseCase(conversationMessagePort, languageModelPort);
+    public ContinueConversationUseCase continueConversationUseCase(ConversationMessagePort conversationMessagePort, LanguageModelPort languageModelPort, UuidGeneratorPort uuidGeneratorPort) {
+        return new ContinueConversationUseCase(conversationMessagePort, languageModelPort, uuidGeneratorPort);
     }
 
     @Bean

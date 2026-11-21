@@ -7,6 +7,8 @@ import br.com.dev.marcus.agentic_workflow.domain.conversation.ConversationMessag
 import br.com.dev.marcus.agentic_workflow.domain.conversation.UserRole;
 import br.com.dev.marcus.agentic_workflow.infra.adapter.out.persistence.conversation.entity.ConversationEntity;
 import br.com.dev.marcus.agentic_workflow.infra.adapter.out.persistence.conversation.entity.ConversationMessageEntity;
+import br.com.dev.marcus.agentic_workflow.infra.adapter.out.persistence.conversation.mapper.ConversationMapper;
+import br.com.dev.marcus.agentic_workflow.infra.adapter.out.persistence.conversation.mapper.ConversationMessageMapper;
 import br.com.dev.marcus.agentic_workflow.infra.adapter.out.persistence.conversation.repository.ConversationJdbcRepository;
 import br.com.dev.marcus.agentic_workflow.infra.adapter.out.persistence.conversation.repository.ConversationMessageJdbcRepository;
 
@@ -103,6 +105,19 @@ public class JdbcConversationMessageAdapter implements ConversationMessagePort {
                 entity.title(),
                 entity.createdAt(),
                 entity.updatedAt()
+        );
+    }
+
+    @Override
+    public void saveConversationWithMessages(Conversation conversation, List<ConversationMessage> messages) {
+        conversationRepository.save(
+                ConversationMapper.toEntity(conversation)
+        );
+        List<ConversationMessageEntity> messageEntities = messages.stream()
+                .map(ConversationMessageMapper::toEntity)
+                .toList();
+        messageRepository.saveAll(
+                messageEntities
         );
     }
 }

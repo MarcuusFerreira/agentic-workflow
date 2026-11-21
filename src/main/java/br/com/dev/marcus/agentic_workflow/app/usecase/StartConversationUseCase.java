@@ -11,6 +11,7 @@ import br.com.dev.marcus.agentic_workflow.domain.conversation.ConversationMessag
 import br.com.dev.marcus.agentic_workflow.domain.conversation.UserRole;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class StartConversationUseCase implements UseCase<StartConversationCommand, ConversationResult> {
@@ -27,25 +28,23 @@ public class StartConversationUseCase implements UseCase<StartConversationComman
 
     @Override
     public ConversationResult execute(StartConversationCommand input) {
-        String result = languageModelPort.generate(input.instruction());
+        String answer = languageModelPort.generate(input.instruction());
         UUID conversationId = uuidGeneratorPort.generate();
-        conversationMessagePort.saveMessage(
-                conversationId,
-                new ConversationMessage(
-                        new UserRole(),
-                        input.instruction(),
-                        OffsetDateTime.now()
-                )
+        Conversation conversation = Conversation.create(conversationId);
+        ConversationMessage userMessage = conversation.postMessage(
+                uuidGeneratorPort.generate(),
+                new UserRole(),
+                input.instruction()
         );
-        conversationMessagePort.saveMessage(
-                conversationId,
-                new ConversationMessage(
-                        new AssistantRole(),
-                        result,
-                        OffsetDateTime.now()
-                )
+        ConversationMessage assistantMessage = conversation.postMessage(
+                uuidGeneratorPort.generate(),
+                new AssistantRole(),
+                answer
         );
-        return new ConversationResult(conversationId, result);
+        conversationMessagePort.saveConversationWithMessages(
+                conversation,
+                List.of(userMessage, assistantMessage)
+        );
+        return new ConversationResult(conversationId, answer);
     }
-
 }

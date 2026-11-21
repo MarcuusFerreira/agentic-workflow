@@ -2,50 +2,55 @@ package br.com.dev.marcus.agentic_workflow.app.usecase;
 
 import br.com.dev.marcus.agentic_workflow.app.port.out.ConversationMessagePort;
 import br.com.dev.marcus.agentic_workflow.app.port.out.LanguageModelPort;
+import br.com.dev.marcus.agentic_workflow.app.port.out.UuidGeneratorPort;
 import br.com.dev.marcus.agentic_workflow.app.usecase.command.ContinueConversationCommand;
 import br.com.dev.marcus.agentic_workflow.app.usecase.result.ConversationResult;
 import br.com.dev.marcus.agentic_workflow.domain.conversation.AssistantRole;
+import br.com.dev.marcus.agentic_workflow.domain.conversation.Conversation;
 import br.com.dev.marcus.agentic_workflow.domain.conversation.ConversationMessage;
 import br.com.dev.marcus.agentic_workflow.domain.conversation.UserRole;
+import br.com.dev.marcus.agentic_workflow.domain.exception.ConversationNotFoundException;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class ContinueConversationUseCase implements UseCase<ContinueConversationCommand, ConversationResult>{
 
     private final ConversationMessagePort conversationMessagePort;
     private final LanguageModelPort languageModelPort;
+    private final UuidGeneratorPort uuidGeneratorPort;
 
-    public ContinueConversationUseCase(ConversationMessagePort conversationMessagePort, LanguageModelPort languageModelPort) {
+    public ContinueConversationUseCase(ConversationMessagePort conversationMessagePort, LanguageModelPort languageModelPort, UuidGeneratorPort uuidGeneratorPort) {
         this.conversationMessagePort = conversationMessagePort;
         this.languageModelPort = languageModelPort;
+        this.uuidGeneratorPort = uuidGeneratorPort;
     }
 
     @Override
     public ConversationResult execute(ContinueConversationCommand input) {
-        var history = conversationMessagePort.getHistory(input.conversationId());
-        var newMessage = new ConversationMessage(
+        Conversation conversation = conversationMessagePort
+                .findConversation(input.conversationId())
+                .orElseThrow(() -> new ConversationNotFoundException("Conversation not found"));
+        List<ConversationMessage> history = conversationMessagePort.findMessageByConversationId(input.conversationId());
+        ConversationMessage userMessage = conversation.postMessage(
+                uuidGeneratorPort.generate(),
                 new UserRole(),
-                input.instruction(),
-                OffsetDateTime.now()
+                input.instruction()
+
         );
-        List<ConversationMessage> listWithNewMessage = new ArrayList<>(history);
-        listWithNewMessage.add(newMessage);
-        String result = languageModelPort.generate(listWithNewMessage);
-        conversationMessagePort.saveMessage(
-                input.conversationId(),
-                newMessage
+        List<ConversationMessage> context = Stream.concat(
+                history.stream(),
+                Stream.of(userMessage)
+        ).toList();
+        String answer = languageModelPort.generate(context);
+        ConversationMessage assistantMessage = conversation.postMessage(
+                uuidGeneratorPort.generate(),
+                new AssistantRole(),
+                answer
         );
-        conversationMessagePort.saveMessage(
-                input.conversationId(),
-                new ConversationMessage(
-                        new AssistantRole(),
-                        result,
-                        OffsetDateTime.now()
-                )
-        );
-        return new ConversationResult(input.conversationId(), result);
+        conversationMessagePort.saveMessage(userMessage);
+        conversationMessagePort.saveMessage(assistantMessage);
+        return new ConversationResult(conversation.id(), answer);
     }
 
 }

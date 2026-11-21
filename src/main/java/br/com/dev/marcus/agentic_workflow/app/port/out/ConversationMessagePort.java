@@ -22,4 +22,9 @@ public interface ConversationMessagePort {
             String title
     );
 
+    void saveConversationWithMessages(
+            Conversation conversation,
+            List<ConversationMessage> messages
+    );
+
 }
