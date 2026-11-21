@@ -45,7 +45,7 @@ public class ConversationJdbcRepository {
 
     public Optional<ConversationEntity> findById(UUID id) {
         String sql = """
-            SELECT ID, CREATED_AT, UPDATED_AT
+            SELECT ID, TITLE, CREATED_AT, UPDATED_AT
             FROM CONVERSATIONS
             WHERE ID = ?
             """;

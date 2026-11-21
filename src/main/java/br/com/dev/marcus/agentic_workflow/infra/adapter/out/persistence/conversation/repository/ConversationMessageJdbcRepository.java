@@ -1,5 +1,8 @@
 package br.com.dev.marcus.agentic_workflow.infra.adapter.out.persistence.conversation.repository;
 
+import br.com.dev.marcus.agentic_workflow.domain.conversation.AssistantRole;
+import br.com.dev.marcus.agentic_workflow.domain.conversation.MessageRole;
+import br.com.dev.marcus.agentic_workflow.domain.conversation.UserRole;
 import br.com.dev.marcus.agentic_workflow.infra.adapter.out.persistence.conversation.entity.ConversationMessageEntity;
 import br.com.dev.marcus.agentic_workflow.infra.adapter.out.persistence.conversation.mapper.ConversationMessageRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -80,5 +83,12 @@ public class ConversationMessageJdbcRepository {
                 new ConversationMessageRowMapper(),
                 conversationId
         );
+    }
+
+    private static String toRoleName(MessageRole role) {
+        return switch (role) {
+            case UserRole r -> "USER";
+            case AssistantRole r -> "ASSISTANT";
+        };
     }
 }

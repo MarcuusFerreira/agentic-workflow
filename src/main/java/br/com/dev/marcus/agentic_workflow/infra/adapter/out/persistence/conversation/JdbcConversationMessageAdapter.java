@@ -60,24 +60,10 @@ public class JdbcConversationMessageAdapter implements ConversationMessagePort {
 
     @Override
     public ConversationMessage saveMessage(ConversationMessage message) {
-        var entity = messageRepository.save(new ConversationMessageEntity(
-                message.id(),
-                message.conversationId(),
-                message.role().toString(),
-                message.content(),
-                message.createdAt()
-        ));
-        return new ConversationMessage(
-                entity.id(),
-                entity.conversationId(),
-                switch (entity.role()) {
-                    case "USER" -> new UserRole();
-                    case "ASSISTANT" -> new AssistantRole();
-                    default -> throw new IllegalStateException("Unexpected value: " + entity.role());
-                },
-                entity.content(),
-                entity.createdAt()
+        var entity = messageRepository.save(
+                ConversationMessageMapper.toEntity(message)
         );
+        return ConversationMessageMapper.toDomain(entity);
     }
 
     @Override
