@@ -10,4 +10,6 @@ public interface LanguageModelPort {
 
     String generate(List<ConversationMessage> messages);
 
+    String generateTitle(String instruction);
+
 }
